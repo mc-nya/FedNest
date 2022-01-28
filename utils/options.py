@@ -9,6 +9,7 @@ def args_parser():
     parser = argparse.ArgumentParser()
     # federated arguments
     parser.add_argument('--epochs', type=int, default=100, help="rounds of training")
+    parser.add_argument('--round', type=int, default=0, help="rounds of communication")
     parser.add_argument('--num_users', type=int, default=100, help="number of users: K")
     parser.add_argument('--frac', type=float, default=0.1, help="the fraction of clients: C")
     parser.add_argument('--local_ep', type=int, default=5, help="the number of local epochs: E")
@@ -21,6 +22,7 @@ def args_parser():
     # bilevel arguments
     parser.add_argument('--neumann', type=int, default=5, help="The iteration of nuemann series")
     parser.add_argument('--inner_ep', type=int, default=1, help="the number of hyper local epochs: H_E")
+    parser.add_argument('--outer_tau', type=int, default=5, help="the number of hyper local epochs: H_E")
     parser.add_argument('--hlr', type=float, default=0.01, help="learning rate")
     parser.add_argument('--hvp_method', type=str, default='global_batch', help='hvp method')
     parser.add_argument('--no_blo', action='store_true', help='whether blo or not')
@@ -46,6 +48,7 @@ def args_parser():
     parser.add_argument('--verbose', action='store_true', help='verbose print')
     parser.add_argument('--seed', type=int, default=1, help='random seed (default: 1)')
     parser.add_argument('--all_clients', action='store_true', help='aggregation over all clients')
+    parser.add_argument('--output', type=str, default=None, help="output path")
     args = parser.parse_args()
     args.device = torch.device('cuda:{}'.format(
         args.gpu) if torch.cuda.is_available() and args.gpu != -1 else 'cpu')

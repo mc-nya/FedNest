@@ -8,9 +8,9 @@ from core.test import test_img
 from utils.Fed import FedAvg, FedAvgGradient
 from models.SvrgUpdate import LocalUpdate
 from utils.options import args_parser
-from utils.dataset import load_data
+from utils.dataset_normal import load_data
 from models.ModelBuilder import build_model
-from core.ClientManage import ClientManage
+from core.ClientManage_hr import ClientManageHR
 from utils.logging import Logger
 from core.function import assign_hyper_gradient
 from torch.optim import SGD
@@ -30,34 +30,35 @@ if __name__ == '__main__':
     # copy weights
     w_glob = net_glob.state_dict()
     if args.output == None:
-        logs = Logger(f'./save/jan25/fed{args.optim}_{args.dataset}\
+        logs = Logger(f'./save/jan25/hr_fed{args.optim}_{args.dataset}\
 _{args.model}_{args.epochs}_C{args.frac}_iid{args.iid}_\
 {args.lr}_blo{not args.no_blo}_\
 IE{args.inner_ep}_N{args.neumann}_HLR{args.hlr}_{args.hvp_method}_{start_time}.yaml')  
     else:
         logs = Logger(args.output)                                                           
     
-    mu=0.01**(1/9)
-    probability=np.array([mu**-i for i in range(0,10)])
-    wy=probability/np.linalg.norm(probability)
-    ly= np.log(1./probability)
-    hyper_param={
-            'dy':torch.zeros(args.num_classes, requires_grad=True, device = args.device),
-            'ly':torch.zeros(args.num_classes, requires_grad=True, device = args.device),
-            #'ly':torch.tensor(ly, device = args.device, dtype = torch.float32),
-            'wy':torch.tensor(wy, device = args.device, dtype = torch.float32)
-            }
-
+    # weight=net_glob.named_parameters()
+    # hyper_param={
+    #         }
+    # param = {
+    # }
+    # for name, w in weight:
+    #     if "header" in name:
+    #         param[name]=w
+    #     else:
+    #         hyper_param[name]=w
+    hyper_param= [k for n,k in net_glob.named_parameters() if not "header" in n]
+    param= [k for n,k in net_glob.named_parameters() if "header" in n]
     comm_round=0
-    hyper_optimizer=SGD([hyper_param[k] for k in hyper_param],
-                                lr=1)
+    hyper_optimizer=SGD(hyper_param, lr=1)
+
     for iter in range(args.epochs):
         m = max(int(args.frac * args.num_users), 1)
         
         
         for _ in range(args.inner_ep):
             client_idx = np.random.choice(range(args.num_users), m, replace=False)
-            client_manage=ClientManage(args,net_glob,client_idx, dataset_train, dict_users,hyper_param)
+            client_manage=ClientManageHR(args,net_glob,client_idx, dataset_train, dict_users,hyper_param)
             w_glob, loss_avg = client_manage.fed_in()
             #print(comm_round)
             if args.optim == 'svrg':
@@ -69,13 +70,15 @@ IE{args.inner_ep}_N{args.neumann}_HLR{args.hlr}_{args.hvp_method}_{start_time}.y
         
         if args.no_blo== False:
             client_idx = np.random.choice(range(args.num_users), m, replace=False)
-            client_manage=ClientManage(args,net_glob,client_idx, dataset_train, dict_users,hyper_param)
+            client_manage=ClientManageHR(args,net_glob,client_idx, dataset_train, dict_users,hyper_param)
             #print("hyper params: ", hyper_param)
             hg_glob, r = client_manage.fed_out()
                     #print("hyper lr", hg_glob)
             assign_hyper_gradient(hyper_param, hg_glob)
             hyper_optimizer.step()
-            #print("hyper params: ", hyper_param)
+            # print("hyper params: ", hyper_param)
+            # print("params: ", param)
+
             comm_round+=r
         
 

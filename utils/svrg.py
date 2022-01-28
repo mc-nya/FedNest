@@ -58,6 +58,7 @@ class SVRG_Snapshot(Optimizer):
     def get_param_groups(self,batch=1):
         batch=float(batch)
         for i in self.param_groups[0]['params']:
+            
             i.grad=torch.div(i.grad,batch)
         return self.param_groups
     

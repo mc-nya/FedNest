@@ -6,18 +6,20 @@ import torch
 
 
 from utils.Fed import FedAvg,FedAvgGradient, FedAvgP
-from core.SGDClient import SGDClient
-from core.SVRGClient import SVRGClient
-from core.Client import Client
+from core.SGDClient_hr import SGDClient
+from core.SVRGClient_hr import SVRGClient
+from core.Client_hr import Client
+from core.ClientManage import ClientManage
 
-class ClientManage():
+class ClientManageHR(ClientManage):
     def __init__(self,args, net_glob, client_idx, dataset, dict_users, hyper_param) -> None:
-        self.net_glob=net_glob
+        super().__init__(args, net_glob, client_idx, dataset, dict_users, hyper_param)
+            
         self.client_idx=client_idx
         self.args=args
         self.dataset=dataset
         self.dict_users=dict_users
-           
+        
         self.hyper_param = copy.deepcopy(hyper_param)
 
     def fed_in(self):
@@ -33,11 +35,16 @@ class ClientManage():
         grad_locals = []
         client_locals = []
 
+        temp_net=copy.deepcopy(self.net_glob)
+        for name, w in temp_net.named_parameters():
+            if not "header" in name:
+                w.requires_grad= False
+
         for idx in self.client_idx:
             if self.args.optim == 'sgd':
-                client = SGDClient(self.args, idx, copy.deepcopy(self.net_glob),self.dataset, self.dict_users, self.hyper_param)
+                client = SGDClient(self.args, idx, copy.deepcopy(temp_net),self.dataset, self.dict_users, self.hyper_param)
             elif self.args.optim == 'svrg':
-                client = SVRGClient(self.args, idx, copy.deepcopy(self.net_glob),self.dataset, self.dict_users, self.hyper_param)
+                client = SVRGClient(self.args, idx, copy.deepcopy(temp_net),self.dataset, self.dict_users, self.hyper_param)
                 grad = client.batch_grad()
                 grad_locals.append(grad)
             else:
@@ -65,7 +72,7 @@ class ClientManage():
     def fedIHGP(self,client_locals):
         d_out_d_y_locals=[]
         for client in client_locals:
-            d_out_d_y=client.grad_d_out_d_y()
+            d_out_d_y,_=client.grad_d_out_d_y()
             d_out_d_y_locals.append(d_out_d_y)
         p=FedAvgP(d_out_d_y_locals,self.args)
         
@@ -83,14 +90,14 @@ class ClientManage():
                     p_client = client.hvp_iter(p_client, self.args.hlr)
                 p_locals.append(p_client)
             p=FedAvgP(p_locals, self.args)
-        elif self.args.hvp_method == 'seperate':
-            for client in client_locals:
-                d_out_d_y=client.grad_d_out_d_y()
-                p_client=d_out_d_y.clone()
-                for _ in range(self.args.neumann):
-                    p_client = client.hvp_iter(p_client, self.args.hlr)
-                p_locals.append(p_client)
-            p=FedAvgP(p_locals, self.args)
+        # elif self.args.hvp_method == 'seperate':
+        #     for client in client_locals:
+        #         d_out_d_y,_=client.grad_d_out_d_y()
+        #         p_client=d_out_d_y.clone()
+        #         for _ in range(self.args.neumann):
+        #             p_client = client.hvp_iter(p_client, self.args.hlr)
+        #         p_locals.append(p_client)
+        #     p=FedAvgP(p_locals, self.args)
 
         else:
             raise NotImplementedError
@@ -101,7 +108,7 @@ class ClientManage():
         for client in client_locals:
             for _ in range(self.args.outer_tau):
                 client.hyper_iter=0
-                d_out_d_y=client.grad_d_out_d_y()
+                d_out_d_y,_=client.grad_d_out_d_y()
                 p_client=d_out_d_y.clone()
                 for _ in range(self.args.neumann):
                     p_client = client.hvp_iter(p_client, self.args.hlr)
@@ -130,13 +137,13 @@ class ClientManage():
             hg= client.hyper_grad(p.clone())
             hg_locals.append(hg)
         hg_glob=FedAvgP(hg_locals, self.args)
+        print(hg_glob)
         comm_round+=1
         #print(hg_glob)
         hg_locals =[]
         for client in client_locals:
             for _ in range(self.args.outer_tau):
                 h = client.hyper_svrg_update(hg_glob)
-                #print(h)
             hg_locals.append(h)
             
         hg_glob=FedAvgP(hg_locals, self.args)

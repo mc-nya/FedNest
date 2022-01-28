@@ -1,3 +1,4 @@
+from numpy import dtype
 import torch.nn.functional as F
 import torch
 from torch.autograd import grad
@@ -64,16 +65,35 @@ def loss_adjust_cross_entropy(logits, targets, params, group_size=1):
 #     return loss
 
 def get_trainable_hyper_params(params):
-    return[params[k] for k in params if params[k].requires_grad]
-
+    if isinstance(params,dict):
+        return[params[k] for k in params if params[k].requires_grad]
+    else:
+        return params
+def gather_flat_hyper_params(params):
+    if isinstance(params,dict):
+        return torch.cat([params[k].view(-1) for k in params if params[k].requires_grad])
+    else:
+        return torch.cat([k.view(-1) for k in params if k.requires_grad])
 
 def assign_hyper_gradient(params, gradient):
     i = 0
-    for k in params:
-        para=params[k]
-        if para.requires_grad:
-            num = para.nelement()
-            grad = gradient[i:i+num].clone()
-            torch.reshape(grad, para.shape)
-            para.grad = grad
-            i += num
+    max_len=gradient.shape[0]
+    if isinstance(params, dict):
+        for k in params:
+            para=params[k]
+            if para.requires_grad:
+                num = para.nelement()
+                grad = gradient[i:min(i+num,max_len)].clone()
+                torch.reshape(grad, para.shape)
+                para.grad = grad.view(para.shape)
+                #para.grad = grad
+                i += num
+    else:
+        for para in params:
+            if para.requires_grad:     
+                num = para.nelement()
+                # if para.grad==None:
+                #     para.grad=torch.zeros(para.shape, dtype=para.dtype, device = para.get_device())
+                grad = gradient[i:min(i+num,max_len)].clone()
+                para.grad = grad.view(para.shape)
+                i += num
