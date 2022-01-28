@@ -11,10 +11,10 @@ pytorch>=0.4
 ## Run
 
 The hyper-representation experiments are produced by:
-> python [main_hr.py]
+> python [main_hr.py](main_hr.py)
 
 The imbalanced MNIST experiments are produced by:
-> python [main_imbalance.py](main_nn.py)
+> python [main_imbalance.py](main_imbalance.py)
 
 See the arguments in [options.py](utils/options.py). 
 
