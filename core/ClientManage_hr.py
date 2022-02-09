@@ -118,6 +118,29 @@ class ClientManageHR(ClientManage):
         hg_glob=FedAvgP(hg_locals, self.args)
         return hg_glob, 1
 
+
+    def lfed_out_svrg(self,client_locals):
+
+        hg_locals =[]
+        for client in client_locals:
+            client.hyper_iter=0
+            d_out_d_y,_=client.grad_d_out_d_y()
+            p_client=d_out_d_y.clone()
+            for _ in range(self.args.neumann):
+                p_client = client.hvp_iter(p_client, self.args.hlr)
+            hg_client = client.hyper_grad(p_client.clone())
+            hg_locals.append(hg_client)
+        hg_glob=FedAvgP(hg_locals, self.args)
+
+        hg_locals =[]
+        for client in client_locals:
+            for _ in range(self.args.outer_tau):
+                h = client.hyper_svrg_update(hg_glob)
+            hg_locals.append(h)
+        hg_glob=FedAvgP(hg_locals, self.args)
+
+        return hg_glob, 2
+
     def fed_out(self):
         client_locals=[]
         #self.outer_optimizer=torch.optim.SGD(self.hyper_param, lr=0.001, momentum=0)
@@ -127,7 +150,8 @@ class ClientManageHR(ClientManage):
 
         if self.args.hvp_method == 'seperate':
             return self.lfed_out(client_locals)
-
+        if self.args.hvp_method == 'seperate_svrg':
+            return self.lfed_out_svrg(client_locals)
         #for client in client_locals:
         p = self.fedIHGP(client_locals)
         comm_round = 1+ self.args.neumann
