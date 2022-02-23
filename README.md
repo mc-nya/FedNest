@@ -1,4 +1,4 @@
-# FedNest: Bilevel Federated Learning 
+# FedNest: Federated Bilevel Optimization 
 
 Only experiments on MNIST and CIFAR10 (both IID and non-IID) is produced by far.
 
