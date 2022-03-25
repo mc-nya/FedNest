@@ -6,6 +6,7 @@
 from math import ceil
 import numpy as np
 from torchvision import datasets, transforms
+import torch
 
 def mnist_iid_normal(dataset, num_users):
     """
@@ -120,10 +121,9 @@ def mnist_noniid_normal(dataset, num_users):
         val_index = np.random.choice(train_index, ceil(train_index.shape[0]*0.2), replace=False)
         train_index = np.array(list(set(train_index) - set(val_index)))
 
-        #print(train_index.shape,val_index.shape)
         dict_users[i] = train_index
         dict_users[-i-1] = val_index
-        #print(train_index.shape,val_index.shape)
+
 
     return dict_users, dataset
     # num_shards, num_imgs = 200, 300
@@ -221,6 +221,49 @@ def cifar_iid(dataset, num_users):
         all_idxs = list(set(all_idxs) - dict_users[i])
     return dict_users, dataset_train
 
+def minmax_dataset(args):
+    num_users=args.num_users
+    base_s= args.minmax_s
+    d= args.d
+    n=args.n
+    
+    s_list=[]
+    data=[]
+    label = []
+    dict_users = {i: np.array([], dtype='int64') for i in range((-num_users-1),num_users)}
+    if args.iid:
+        for _ in range(num_users):
+            s=base_s
+            s_list.append(s)        
+    else:
+        for _ in range(num_users):
+            s = abs(np.random.normal(0,base_s))
+            s_list.append(s)
+
+    for i in range(num_users):
+        s = s_list[i]
+        #b = np.random.normal(0,s**2,n)
+        #b = b - np.mean(b)
+        b = np.zeros(n)
+        # a = np.random.normal(1,s**2,n)
+        # a[a<1]=1
+        # A = np.diag(a)
+        A = np.random.normal(0,s**2,(n,d))
+        data.append(A)
+        label.extend(b)
+        dict_users[i] = list(range(i*n,i*n+n))
+        dict_users[-i-1] = list(range(i*n,i*n+n))
+
+    data= np.vstack(data)
+    label = np.vstack(label)
+    #print(data.shape,label)
+    #print(dict_users)
+    #print(s_list)
+    tensor_data = torch.Tensor(data)
+    tensor_label = torch.Tensor(label)
+    dataset = torch.utils.data.TensorDataset(tensor_data,tensor_label)
+    #print(dataset)
+    return dataset,None,dict_users, None, dataset
 
 if __name__ == '__main__':
     dataset_train = datasets.MNIST('../data/mnist/', train=True, download=True,

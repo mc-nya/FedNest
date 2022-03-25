@@ -2,10 +2,23 @@
 # -*- coding: utf-8 -*-
 # Python version: 3.6
 
+from numpy import dtype
 import torch
 from torch import nn
 import torch.nn.functional as F
 
+class Linear(nn.Module):
+    def __init__(self, d, n):
+        super(Linear, self).__init__()
+        self.y_header = torch.ones(n, dtype=torch.float32)*10
+        self.x = torch.ones( d, dtype=torch.float32)*10
+        self.y_header.requires_grad=True
+        self.x.requires_grad=True
+        self.y_header = nn.Parameter(self.y_header)
+        self.x = nn.Parameter(self.x)
+    def forward(self, A):
+        #y_square = -0.5* torch.t(self.y_header) * self.y_header
+        return torch.matmul(A,self.x)
 
 class MLP(nn.Module):
     def __init__(self, dim_in, dim_hidden, dim_out):

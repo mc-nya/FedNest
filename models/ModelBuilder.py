@@ -1,4 +1,4 @@
-from models.Nets import CNNCifar,CNNMnist,MLP
+from models.Nets import CNNCifar,CNNMnist,MLP,Linear
 
 def build_model(args):
     # build model
@@ -12,6 +12,9 @@ def build_model(args):
             len_in *= x
         net_glob = MLP(dim_in=len_in, dim_hidden=200,
                        dim_out=args.num_classes).to(args.device)
+    elif args.model == 'linear':
+        net_glob = Linear(d=args.d,n=args.n).to(args.device)
+        
     else:
         exit('Error: unrecognized model')
     print(net_glob)

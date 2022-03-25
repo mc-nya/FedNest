@@ -1,5 +1,5 @@
 from torchvision import datasets, transforms
-from utils.sampling import mnist_iid, mnist_iid_normal, mnist_noniid, cifar_iid, mnist_noniid_normal
+from utils.sampling import mnist_iid, mnist_iid_normal, mnist_noniid, cifar_iid, mnist_noniid_normal, minmax_dataset
 def load_data(args):
     # load dataset and split users
     if args.dataset == 'mnist':
@@ -25,6 +25,8 @@ def load_data(args):
             dict_users, dataset_train_real = cifar_iid(dataset_train, args.num_users)
         else:
             exit('Error: only consider IID setting in CIFAR10')
+    elif args.dataset == 'minmax_synthetic':
+        dataset_train, dataset_test, dict_users, img_size, dataset_train_real = minmax_dataset(args)
     else:
         exit('Error: unrecognized dataset')
     img_size = dataset_train[0][0].shape

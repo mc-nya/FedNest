@@ -26,6 +26,8 @@ def args_parser():
     parser.add_argument('--hlr', type=float, default=0.01, help="learning rate")
     parser.add_argument('--hvp_method', type=str, default='global_batch', help='hvp method')
     parser.add_argument('--no_blo', action='store_true', help='whether blo or not')
+    # Minmax arguments
+    parser.add_argument('--minmax_s', type=int, default=5, help="The heterogenity of synthetic dataset")
     
     # model arguments
     parser.add_argument('--model', type=str, default='mlp', help='model name')

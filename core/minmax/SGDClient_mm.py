@@ -1,5 +1,5 @@
 import torch
-from core.Client_hr import Client
+from core.minmax.Client_mm import Client
 
 class SGDClient(Client):
     def __init__(self, args, client_id, net, dataset=None, idxs=None, hyper_param= None) -> None:
@@ -20,7 +20,7 @@ class SGDClient(Client):
                 images, labels = images.to(self.args.device), labels.to(self.args.device)
                 self.net.zero_grad()
                 log_probs = self.net(images)
-                loss = self.loss_func(log_probs, labels, [k for k in self.net.parameters() if k.requires_grad==True])
+                loss = self.loss_func(log_probs, labels,self.net)
                 loss.backward()
                 optimizer.step()
                 if self.args.verbose and batch_idx % 10 == 0:

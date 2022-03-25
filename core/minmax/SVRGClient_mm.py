@@ -1,6 +1,6 @@
 from utils.svrg import SVRG_k,SVRG_Snapshot
 import copy
-from core.Client_hr import Client
+from core.minmax.Client_mm import Client
 
 class SVRGClient(Client):
     def __init__(self, args, client_id, net, dataset=None, idxs=None, hyper_param=None) -> None:
@@ -31,13 +31,13 @@ class SVRGClient(Client):
 
                 self.net0.zero_grad()
                 log_probs_0=self.net0(images)
-                loss0=self.loss_func(log_probs_0, labels, [k for k in self.net0.parameters() if k.requires_grad==True])
+                loss0=self.loss_func(log_probs_0, labels, self.net0)
                 loss0.backward()
                 param_group=optim0.get_param_groups(1)
 
                 self.net.zero_grad()
                 log_probs = self.net(images)
-                loss = self.loss_func(log_probs, labels, [k for k in self.net.parameters() if k.requires_grad==True])
+                loss = self.loss_func(log_probs, labels, self.net)
                 loss.backward()
                 optimizer.step(param_group)
                 if self.args.verbose and batch_idx % 10 == 0:
