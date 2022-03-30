@@ -37,16 +37,6 @@ IE{args.inner_ep}_N{args.neumann}_HLR{args.hlr}_{args.hvp_method}_{start_time}.y
     else:
         logs = Logger(args.output)                                                           
     
-    # weight=net_glob.named_parameters()
-    # hyper_param={
-    #         }
-    # param = {
-    # }
-    # for name, w in weight:
-    #     if "header" in name:
-    #         param[name]=w
-    #     else:
-    #         hyper_param[name]=w
     hyper_param= [k for n,k in net_glob.named_parameters() if not "header" in n]
     param= [k for n,k in net_glob.named_parameters() if "header" in n]
     comm_round=0

@@ -44,7 +44,6 @@ class Client():
         self.hyper_param_init = [k for n,k in self.init_net.named_parameters() if not "header" in n]
         self.hyper_optimizer= SGD(self.hyper_param,
                                 lr=args.hlr)
-        #self.val_loss = nn.CrossEntropyLoss(weight=self.hyper_param['wy'])
         self.val_loss = self.cross_entropy
         self.loss_func = self.cross_entropy_reg #nn.CrossEntropyLoss()
         self.hyper_iter = 0
@@ -55,7 +54,6 @@ class Client():
     def batch_grad(self):
         self.net0 = copy.deepcopy(self.net)
         self.net0.train()
-        #print([k for k in self.net0.parameters() if k.requires_grad==True])
         optimizer = SVRG_Snapshot([k for k in self.net0.parameters() if k.requires_grad==True])
         self.net0.zero_grad()
         for batch_idx, (images, labels) in enumerate(self.ldr_train):
@@ -104,7 +102,6 @@ class Client():
 
 
     def hvp_iter(self, p, lr):
-        # counter=p.clone()
         if self.hyper_iter == 0:
             self.d_in_d_y,_ = self.grad_d_in_d_y()
             self.counter = p.clone()
@@ -117,7 +114,6 @@ class Client():
         self.counter = old_counter - lr * hessian_term
         p = p+self.counter
         self.hyper_iter += 1
-        #print("hyper p", p.shape, p)
         return p
     
     def grad_d_out_d_x(self, net = None):
@@ -161,32 +157,19 @@ class Client():
 
         assign_hyper_gradient(self.hyper_param, hg.detach())
         self.hyper_optimizer.step()
-        #print("hg",hg*self.args.hlr)
-        #print("update",-gather_flat_hyper_params(self.hyper_param)+gather_flat_hyper_params(self.hyper_param_init))
         return -gather_flat_hyper_params(self.hyper_param)+gather_flat_hyper_params(self.hyper_param_init)
     
     def hyper_svrg_update(self, hg):
         try:
             direct_grad = self.grad_d_out_d_x()
             direct_grad_0 = self.grad_d_out_d_x(net=self.init_net)
-            #print("direct",direct_grad)
             h = direct_grad - direct_grad_0 + hg
         except:
             h = hg
         h=h.detach()
         assign_hyper_gradient(self.hyper_param, h)
         self.hyper_optimizer.step()
-        #return get_trainable_hyper_params(self.hyper_param)-get_trainable_hyper_params(self.hyper_param_init)
         return -gather_flat_hyper_params(self.hyper_param)+gather_flat_hyper_params(self.hyper_param_init)
-
-
-
-    # def loss_adjust_cross_entropy(self, logits, targets):
-    #     dy = self.hyper_param['dy']
-    #     ly = self.hyper_param['ly']
-    #     x = logits*torch.sigmoid(dy)+ly
-    #     loss = F.cross_entropy(x, targets)
-    #     return loss
     
     def cross_entropy(self, logits, targets):
         return F.cross_entropy(logits, targets)

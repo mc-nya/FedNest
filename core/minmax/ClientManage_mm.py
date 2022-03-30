@@ -90,15 +90,6 @@ class ClientManageMM(ClientManage):
                     p_client = client.hvp_iter(p_client, self.args.hlr)
                 p_locals.append(p_client)
             p=FedAvgP(p_locals, self.args)
-        # elif self.args.hvp_method == 'seperate':
-        #     for client in client_locals:
-        #         d_out_d_y,_=client.grad_d_out_d_y()
-        #         p_client=d_out_d_y.clone()
-        #         for _ in range(self.args.neumann):
-        #             p_client = client.hvp_iter(p_client, self.args.hlr)
-        #         p_locals.append(p_client)
-        #     p=FedAvgP(p_locals, self.args)
-
         else:
             raise NotImplementedError
         #print("final p", p)
@@ -143,7 +134,6 @@ class ClientManageMM(ClientManage):
 
     def fed_out(self):
         client_locals=[]
-        #self.outer_optimizer=torch.optim.SGD(self.hyper_param, lr=0.001, momentum=0)
         for idx in self.client_idx:
             client= Client(self.args, idx, copy.deepcopy(self.net_glob),self.dataset, self.dict_users, self.hyper_param)
             client_locals.append(client)
@@ -152,7 +142,6 @@ class ClientManageMM(ClientManage):
             return self.lfed_out(client_locals)
         if self.args.hvp_method == 'seperate_svrg':
             return self.lfed_out_svrg(client_locals)
-        #for client in client_locals:
         p = self.fedIHGP(client_locals)
         comm_round = 1+ self.args.neumann
 

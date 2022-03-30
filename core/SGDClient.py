@@ -8,7 +8,7 @@ class SGDClient(Client):
         self.net.train()
         # train and update
         optimizer = torch.optim.SGD(self.net.parameters(), lr=self.args.lr, momentum=self.args.momentum)
-        #optimizer = torch.optim.SGD(self.net.parameters(), lr=self.hyper_param["lr"], momentum=self.args.momentum)
+        
 
         epoch_loss = []
         for iter in range(self.args.local_ep):

@@ -94,7 +94,6 @@ class ClientManage():
 
         else:
             raise NotImplementedError
-        #print("final p", p)
         return p
     def lfed_out(self,client_locals):
         hg_locals =[]
@@ -113,7 +112,6 @@ class ClientManage():
 
     def fed_out(self):
         client_locals=[]
-        #self.outer_optimizer=torch.optim.SGD(self.hyper_param, lr=0.001, momentum=0)
         for idx in self.client_idx:
             client= Client(self.args, idx, copy.deepcopy(self.net_glob),self.dataset, self.dict_users, self.hyper_param)
             client_locals.append(client)
@@ -131,12 +129,10 @@ class ClientManage():
             hg_locals.append(hg)
         hg_glob=FedAvgP(hg_locals, self.args)
         comm_round+=1
-        #print(hg_glob)
         hg_locals =[]
         for client in client_locals:
             for _ in range(self.args.outer_tau):
                 h = client.hyper_svrg_update(hg_glob)
-                #print(h)
             hg_locals.append(h)
             
         hg_glob=FedAvgP(hg_locals, self.args)

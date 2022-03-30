@@ -40,7 +40,6 @@ class Client():
         self.hyper_param_init=copy.deepcopy(hyper_param)
         self.hyper_optimizer= SGD([self.hyper_param[k] for k in self.hyper_param],
                                 lr=args.hlr)
-        #self.val_loss = nn.CrossEntropyLoss(weight=self.hyper_param['wy'])
         self.val_loss = self.cross_entropy
         self.loss_func = self.loss_adjust_cross_entropy #nn.CrossEntropyLoss()
         self.hyper_iter = 0
@@ -95,7 +94,6 @@ class Client():
 
 
     def hvp_iter(self, p, lr):
-        # counter=p.clone()
         if self.hyper_iter == 0:
             self.d_in_d_y = self.grad_d_in_d_y()
             self.counter = p.clone()
@@ -107,7 +105,6 @@ class Client():
         self.counter = old_counter - lr * hessian_term
         p = p+self.counter
         self.hyper_iter += 1
-        #print("hyper p", p.shape, p)
         return p
     
     def grad_d_out_d_x(self, hyper_param = None):
@@ -140,7 +137,6 @@ class Client():
             direct_grad= self.grad_d_out_d_x()
             hyper_grad=direct_grad-indirect_grad
         except:
-            #print(" No direct grad, use only indirect gradient.")
             hyper_grad=-indirect_grad
         return hyper_grad
 
@@ -158,7 +154,6 @@ class Client():
             h = hg
         assign_hyper_gradient(self.hyper_param, h)
         self.hyper_optimizer.step()
-        #return get_trainable_hyper_params(self.hyper_param)-get_trainable_hyper_params(self.hyper_param_init)
         return -gather_flat_hyper_params(self.hyper_param)+gather_flat_hyper_params(self.hyper_param_init)
 
 

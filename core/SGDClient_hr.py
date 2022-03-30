@@ -11,7 +11,6 @@ class SGDClient(Client):
             if not "header" in name:
                 w.requires_grad= False
         optimizer = torch.optim.SGD([k for k in self.net.parameters() if k.requires_grad==True], lr=self.args.lr, momentum=self.args.momentum)
-        #optimizer = torch.optim.SGD(self.net.parameters(), lr=self.hyper_param["lr"], momentum=self.args.momentum)
 
         epoch_loss = []
         for iter in range(self.args.local_ep):

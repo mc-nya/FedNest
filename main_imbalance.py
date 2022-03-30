@@ -44,7 +44,6 @@ IE{args.inner_ep}_N{args.neumann}_HLR{args.hlr}_{args.hvp_method}_{start_time}.y
     hyper_param={
             'dy':torch.zeros(args.num_classes, requires_grad=True, device = args.device),
             'ly':torch.zeros(args.num_classes, requires_grad=True, device = args.device),
-            #'ly':torch.tensor(ly, device = args.device, dtype = torch.float32),
             'wy':torch.tensor(wy, device = args.device, dtype = torch.float32)
             }
 
@@ -59,23 +58,18 @@ IE{args.inner_ep}_N{args.neumann}_HLR{args.hlr}_{args.hvp_method}_{start_time}.y
             client_idx = np.random.choice(range(args.num_users), m, replace=False)
             client_manage=ClientManage(args,net_glob,client_idx, dataset_train, dict_users,hyper_param)
             w_glob, loss_avg = client_manage.fed_in()
-            #print(comm_round)
             if args.optim == 'svrg':
                 comm_round+=2
             else:
                 comm_round+=1
-            #print(comm_round)
         net_glob.load_state_dict(w_glob)
         
         if args.no_blo== False:
             client_idx = np.random.choice(range(args.num_users), m, replace=False)
             client_manage=ClientManage(args,net_glob,client_idx, dataset_train, dict_users,hyper_param)
-            #print("hyper params: ", hyper_param)
             hg_glob, r = client_manage.fed_out()
-                    #print("hyper lr", hg_glob)
             assign_hyper_gradient(hyper_param, hg_glob)
             hyper_optimizer.step()
-            #print("hyper params: ", hyper_param)
             comm_round+=r
         
 

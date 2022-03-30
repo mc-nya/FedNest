@@ -5,11 +5,7 @@ from torch.autograd import grad
 
 
 def gather_flat_grad(loss_grad):
-    #cnt = 0
-    # for g in loss_grad:
-    #    g_vector = g.contiguous().view(-1) if cnt == 0 else torch.cat([g_vector, g.contiguous().view(-1)])
-    #    cnt = 1
-    # g_vector
+    # convert the gradient output from list of tensors to to flat vector 
     return torch.cat([p.contiguous().view(-1) for p in loss_grad if not p is None])
 
 
@@ -21,9 +17,6 @@ def neumann_hyperstep_preconditioner(d_val_loss_d_theta, d_train_loss_d_w, eleme
     while i < num_neumann_terms:  # for i in range(num_neumann_terms):
         old_counter = counter
         # This increments counter to counter * (I - hessian) = counter - counter * hessian
-        #gradient=grad(d_train_loss_d_w, model.parameters(), grad_outputs=counter.view(-1), retain_graph=True)
-        # print(gradient)
-        # print(d_train_loss_d_w)
         hessian_term = gather_flat_grad(
             grad(d_train_loss_d_w, model.parameters(), grad_outputs=counter.view(-1), retain_graph=True))
         counter = old_counter - elementary_lr * hessian_term
@@ -33,6 +26,7 @@ def neumann_hyperstep_preconditioner(d_val_loss_d_theta, d_train_loss_d_w, eleme
 
 
 def loss_adjust_cross_entropy(logits, targets, params, group_size=1):
+    # loss adjust cross entropy for long-tail cifar experiments
     dy = params['dy']
     ly = params['ly']
     if group_size != 1:
@@ -47,22 +41,6 @@ def loss_adjust_cross_entropy(logits, targets, params, group_size=1):
     else:
         loss = F.cross_entropy(x, targets)
     return loss
-
-# def hyper_representation_ce(logits, targets, params, group_size=1):
-#     dy = params[0]
-#     ly = params[1]
-#     if group_size != 1:
-#         new_dy = dy.repeat_interleave(group_size)
-#         new_ly = ly.repeat_interleave(group_size)
-#         x = logits*F.sigmoid(new_dy)+new_ly
-#     else:
-#         x = logits*F.sigmoid(dy)+ly
-#     if len(params) == 3:
-#         wy = params[2]
-#         loss = F.cross_entropy(x, targets, weight=wy)
-#     else:
-#         loss = F.cross_entropy(x, targets)
-#     return loss
 
 def get_trainable_hyper_params(params):
     if isinstance(params,dict):
@@ -86,14 +64,11 @@ def assign_hyper_gradient(params, gradient):
                 grad = gradient[i:min(i+num,max_len)].clone()
                 torch.reshape(grad, para.shape)
                 para.grad = grad.view(para.shape)
-                #para.grad = grad
                 i += num
     else:
         for para in params:
             if para.requires_grad:     
                 num = para.nelement()
-                # if para.grad==None:
-                #     para.grad=torch.zeros(para.shape, dtype=para.dtype, device = para.get_device())
                 grad = gradient[i:min(i+num,max_len)].clone()
                 para.grad = grad.view(para.shape)
                 i += num

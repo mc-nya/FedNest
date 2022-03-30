@@ -37,25 +37,17 @@ IE{args.inner_ep}_N{args.neumann}_HLR{args.hlr}_{args.hvp_method}_{start_time}.y
     else:
         logs = Logger(args.output)                                                           
     
-    # weight=net_glob.named_parameters()
-    # hyper_param={
-    #         }
-    # param = {
-    # }
-    # for name, w in weight:
-    #     if "header" in name:
-    #         param[name]=w
-    #     else:
-    #         hyper_param[name]=w
+    # Set inner and outer parameters, and outer optimizer
     hyper_param= [k for n,k in net_glob.named_parameters() if not "header" in n]
     param= [k for n,k in net_glob.named_parameters() if "header" in n]
     comm_round=0
     hyper_optimizer=SGD(hyper_param, lr=1)
 
+    # Global epoch (FedInn+Fedout)
     for iter in range(args.epochs):
         m = max(int(args.frac * args.num_users), 1)
         
-        
+        # FedInn
         for _ in range(args.inner_ep):
             client_idx = np.random.choice(range(args.num_users), m, replace=False)
             client_manage=ClientManageHR(args,net_glob,client_idx, dataset_train, dict_users,hyper_param)
@@ -68,20 +60,15 @@ IE{args.inner_ep}_N{args.neumann}_HLR{args.hlr}_{args.hvp_method}_{start_time}.y
             #print(comm_round)
         net_glob.load_state_dict(w_glob)
         
+        # FedOut
         if args.no_blo== False:
             client_idx = np.random.choice(range(args.num_users), m, replace=False)
             client_manage=ClientManageHR(args,net_glob,client_idx, dataset_train, dict_users,hyper_param)
-            #print("hyper params: ", hyper_param)
             hg_glob, r = client_manage.fed_out()
-                    #print("hyper lr", hg_glob)
             assign_hyper_gradient(hyper_param, hg_glob)
             hyper_optimizer.step()
-            # print("hyper params: ", hyper_param)
-            # print("params: ", param)
-
             comm_round+=r
         
-
         # print loss
         print('Round {:3d}, Average loss {:.3f}'.format(iter, loss_avg))
 

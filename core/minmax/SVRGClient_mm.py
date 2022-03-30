@@ -16,7 +16,6 @@ class SVRGClient(Client):
                 w.requires_grad= False
         # train and update
         optimizer = SVRG_k([k for k in self.net.parameters() if k.requires_grad==True], lr=self.args.lr)
-        #optimizer = SVRG_k(self.net.parameters(), lr=self.hyper_param["lr"])
         optimizer.set_u(self.avg_q)
 
         self.net0 = copy.deepcopy(self.net)
