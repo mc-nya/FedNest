@@ -30,7 +30,7 @@ if __name__ == '__main__':
     # copy weights
     w_glob = net_glob.state_dict()
     if args.output == None:
-        logs = Logger(f'./save/jan25/hrj_fed{args.optim}_{args.dataset}\
+        logs = Logger(f'./save/hrj_fed{args.optim}_{args.dataset}\
 _{args.model}_{args.epochs}_C{args.frac}_iid{args.iid}_\
 {args.lr}_blo{not args.no_blo}_\
 IE{args.inner_ep}_N{args.neumann}_HLR{args.hlr}_{args.hvp_method}_{start_time}.yaml')  
