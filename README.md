@@ -1,6 +1,4 @@
-# FedNest: Bilevel Federated Learning 
-
-Only experiments on MNIST and CIFAR10 (both IID and non-IID) is produced by far.
+# FedNest: Federated Bilevel Optimization
 
 Note: The scripts will be slow without the implementation of parallel computing. 
 
@@ -16,7 +14,10 @@ The hyper-representation experiments are produced by:
 The imbalanced MNIST experiments are produced by:
 > python [main_imbalance.py](main_imbalance.py)
 
-See the arguments in [options.py](utils/options.py). 
+The min-max synthetic experiments are produced by:
+> python [main_minmax.py](main_minmax.py)
+
+See the avaliable arguments in [options.py](utils/options.py). 
 
 For example:
 > python main_hr.py --iid --epochs 50 --gpu 0 
