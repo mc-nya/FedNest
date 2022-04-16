@@ -6,9 +6,9 @@ import torch
 
 
 from utils.Fed import FedAvg,FedAvgGradient, FedAvgP
-from core.minmax.SGDClient_mm import SGDClient
-from core.minmax.SVRGClient_mm import SVRGClient
-from core.minmax.Client_mm import Client
+from core.mm_fmnist.SGDClient_fm import SGDClient
+from core.mm_fmnist.SVRGClient_fm import SVRGClient
+from core.mm_fmnist.Client_fm import Client
 from core.ClientManage import ClientManage
 
 class ClientManageMM(ClientManage):
@@ -149,14 +149,14 @@ class ClientManageMM(ClientManage):
                 w_locals.append(copy.deepcopy(w))
             loss_locals.append(copy.deepcopy(loss))
         # update global weights
-        w_glob = FedAvg(w_locals)
 
+        hg_glob, comm_round = self.lfed_out(client_locals)
+
+        w_glob = FedAvg(w_locals)
         # copy weight to net_glob
         self.net_glob.load_state_dict(w_glob)
         loss_avg = sum(loss_locals) / len(loss_locals)
-        #return w_glob, loss_avg
 
-        hg_glob, comm_round = self.lfed_out(client_locals)
         return w_glob, loss_avg, hg_glob, comm_round
 
 

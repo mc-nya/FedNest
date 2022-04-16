@@ -32,6 +32,7 @@ def mnist_iid_normal(dataset, num_users):
         
     return dict_users, dataset
 
+
 def mnist_iid(dataset, num_users):
     """
     Sample I.I.D. client data from MNIST dataset
@@ -80,6 +81,9 @@ def mnist_iid(dataset, num_users):
         dict_users[-i-1] = val_index
         
     return dict_users, dataset_real
+
+
+
 
 
 def mnist_noniid_normal(dataset, num_users):
@@ -230,6 +234,7 @@ def minmax_dataset(args):
     s_list=[]
     data=[]
     label = []
+    #np.random.seed(base_s)
     dict_users = {i: np.array([], dtype='int64') for i in range((-num_users-1),num_users)}
     if args.iid:
         for _ in range(num_users):
@@ -237,18 +242,25 @@ def minmax_dataset(args):
             s_list.append(s)        
     else:
         for _ in range(num_users):
-            s = abs(np.random.normal(0,base_s))
+            s = abs(np.random.uniform(0,2*base_s))
             s_list.append(s)
 
     for i in range(num_users):
         s = s_list[i]
-        #b = np.random.normal(0,s**2,n)
-        #b = b - np.mean(b)
-        b = np.zeros(n)
+
+        # b = np.random.normal(0,s**2,n)
+        # b = b - np.mean(b)
         # a = np.random.normal(1,s**2,n)
         # a[a<1]=1
         # A = np.diag(a)
-        A = np.random.normal(0,s**2,(n,d))
+
+        # b = np.zeros(n)
+        # A = np.random.normal(0,s**2,(n,d))
+
+        b = np.random.normal(0,s**2,n)
+        a = np.random.uniform(0,1.,n)
+        A = np.diag(a)
+
         data.append(A)
         label.extend(b)
         dict_users[i] = list(range(i*n,i*n+n))
@@ -265,7 +277,75 @@ def minmax_dataset(args):
     #print(dataset)
     return dataset,None,dict_users, None, dataset
 
+
+def fmnist_iid_normal(dataset, num_users):
+    """
+    Sample I.I.D. client data from Fashion MNIST dataset
+    :param dataset:
+    :param num_users:
+    :return: dict of image index
+    """
+    
+    num_items = int(len(dataset)/num_users)
+    dict_users, all_idxs = {}, [i for i in range(len(dataset))]
+    for i in range(num_users):
+        train_index = np.random.choice(all_idxs, num_items, replace=False)
+        
+        all_idxs = list(set(all_idxs) - set(train_index))
+        #print(train_index.shape, len(all_idxs))
+        #train_index= list(train_index)
+        #val_index = np.random.choice(train_index, ceil(train_index.shape[0]*0.5), replace=False)
+        #train_index = np.array(list(set(train_index) - set(val_index)))
+        val_index=train_index
+        #print(train_index.shape,val_index.shape)
+        dict_users[i] = train_index
+        dict_users[-i-1] = val_index
+        
+    return dict_users, dataset
+
+def fmnist_noniid_normal(dataset, num_users):
+    """
+    Sample non-I.I.D client data from MNIST dataset
+    :param dataset:
+    :param num_users:
+    :return:
+    """
+
+    #dict_users = {i: np.array([], dtype='int64') for i in range((-num_users-1),num_users)}
+
+    
+    labels=dataset.targets.numpy()
+    num_shards, num_imgs = num_users*2, 18000//(num_users*2)
+    idx_shard = [i for i in range(num_shards)]
+    dict_users = {i: np.array([], dtype='int64') for i in range((-num_users-1),num_users)}
+    idxs = np.arange(num_shards*num_imgs)
+
+    # sort labels
+    idxs_labels = np.vstack((idxs, labels))
+    idxs_labels = idxs_labels[:,idxs_labels[1,:].argsort()]
+    idxs = idxs_labels[0,:]
+
+    for i in range(num_users):
+        rand_set = set(np.random.choice(idx_shard, 2, replace=False))
+        idx_shard = list(set(idx_shard) - rand_set)
+
+        train_index = []
+        for rand in rand_set:
+            train_index.extend(idxs[rand*num_imgs:(rand+1)*num_imgs])
+
+        train_index=np.array(train_index)
+        #val_index = np.random.choice(train_index, ceil(train_index.shape[0]*0.2), replace=False)
+        #train_index = np.array(list(set(train_index) - set(val_index)))
+        val_index=train_index
+        dict_users[i] = train_index
+        dict_users[-i-1] = val_index
+
+    return dict_users, dataset
+
+
 if __name__ == '__main__':
+    dataset_train = datasets.FashionMNIST("../data/fmnist/",train=True, download=True)
+    dataset_test = datasets.FashionMNIST("../data/fmnist", train = False, download=True)
     dataset_train = datasets.MNIST('../data/mnist/', train=True, download=True,
                                    transform=transforms.Compose([
                                        transforms.ToTensor(),

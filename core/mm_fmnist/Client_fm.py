@@ -89,7 +89,6 @@ class Client():
             loss = self.val_loss(log_probs, labels,net)
             d_out_d_x += gather_flat_grad(grad(loss,
                                          get_trainable_hyper_params(hyper_param), create_graph=True))
-        
         d_out_d_x /= (batch_idx+1.)
         return d_out_d_x
 
@@ -111,25 +110,13 @@ class Client():
         self.hyper_optimizer.step()
         return -gather_flat_hyper_params(self.hyper_param)+gather_flat_hyper_params(self.hyper_param_init)
     
-    def minmax_inner(self, Ax, b, model):
-        lmbda=0.1
-        #loss=torch.matmul(model.y_inner.view(-1),Ax)
-        # loss =(1./self.args.local_bs)*(-0.5*torch.norm(model.y_inner)**2-torch.matmul(b.view(-1),model.y_inner)\
-        #      +torch.matmul(model.y_inner.view(-1),Ax))+lmbda/2.*torch.norm(model.x_outer)**2
-        loss = -model.y_inner.pow(2).sum()-torch.matmul(b.view(-1),model.y_inner)+torch.matmul(model.y_inner.view(-1),Ax)
-        loss *=0.5
-        loss += lmbda/2.*model.x_outer.pow(2).sum()
-        loss = (1./self.args.local_bs)*loss
+    def minmax_inner(self, pred, labels, model):
+        loss = F.cross_entropy(pred, labels,reduction='none')
+        loss = (F.relu(model.t_inner[labels])*loss/loss.shape[0]).sum()-model.t_inner.pow(2).sum()*0.05
         return -loss
-    def minmax_outer(self, Ax, b, model):
-        lmbda=0.1
-        #loss=torch.matmul(model.y_inner.view(-1),Ax)
-        # loss =(1./self.args.local_bs)*(-0.5*torch.norm(model.y_inner)**2-torch.matmul(b.view(-1),model.y_inner)\
-        #     +torch.matmul(model.y_inner.view(-1),Ax))+lmbda/2.*torch.norm(model.x_outer)**2
-        loss = -model.y_inner.pow(2).sum()-torch.matmul(b.view(-1),model.y_inner)+torch.matmul(model.y_inner.view(-1),Ax)
-        loss *=0.5
-        loss += lmbda/2.*model.x_outer.pow(2).sum()
-        loss = (1./self.args.local_bs)*loss
+    def minmax_outer(self, pred, labels, model):
+        loss = F.cross_entropy(pred, labels,reduction='none')
+        loss = (F.relu(model.t_inner[labels])*loss/loss.shape[0]).sum()-model.t_inner.pow(2).sum()*0.05
         return loss
 
 

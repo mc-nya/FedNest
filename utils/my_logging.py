@@ -16,7 +16,7 @@ class Logger():
         self.logs["round"].append(round)
         self.counter+=1
     def save(self):
-        if self.counter%100==0:
-            f = open(self.filename, mode="w+")
-            yaml.dump(self.logs, f)
-            f.close()
+        #if self.counter%100==0:
+        f = open(self.filename, mode="w+")
+        yaml.dump(self.logs, f)
+        f.close()

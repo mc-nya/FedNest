@@ -11,7 +11,7 @@ from utils.options import args_parser
 from utils.dataset_normal import load_data
 from models.ModelBuilder import build_model
 from core.ClientManage_hr import ClientManageHR
-from utils.logging import Logger
+from utils.my_logging import Logger
 from core.function import assign_hyper_gradient
 from torch.optim import SGD
 import torch

@@ -8,7 +8,7 @@ class SGDClient(Client):
         self.net.train()
         # train and update
         for name, w in self.net.named_parameters():
-            if not "header" in name:
+            if "outer" in name:
                 w.requires_grad= False
         optimizer = torch.optim.SGD([k for k in self.net.parameters() if k.requires_grad==True], lr=self.args.lr, momentum=self.args.momentum)
 
@@ -29,7 +29,7 @@ class SGDClient(Client):
                 batch_loss.append(loss.item())
             epoch_loss.append(sum(batch_loss)/len(batch_loss))
         for name, w in self.net.named_parameters():
-            if not "header" in name:
+            if "outer" in name:
                 w.requires_grad= True
         return self.net.state_dict(), sum(epoch_loss) / len(epoch_loss)
     

@@ -1,6 +1,6 @@
 from utils.svrg import SVRG_k,SVRG_Snapshot
 import copy
-from core.minmax.Client_mm import Client
+from core.mm_fmnist.Client_fm import Client
 
 class SVRGClient(Client):
     def __init__(self, args, client_id, net, dataset=None, idxs=None, hyper_param=None) -> None:
