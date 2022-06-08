@@ -10,28 +10,11 @@ Imbalanced Data(Mingchen Li
 
 Note: The scripts will be slow without the implementation of parallel computing. 
 
-
-
 ## Requirements
 python>=3.6  
 pytorch>=0.4
 
-## Run
-
-The hyper-representation experiments are produced by:
-> python [main_hr.py](main_hr.py)
-
-The imbalanced MNIST experiments are produced by:
-> python [main_imbalance.py](main_imbalance.py)
-
-The min-max synthetic experiments are produced in the Jupyter Notebook [minmax_synthetic.ipynb](minmax_synthetic.ipynb)
-
-See the avaliable arguments in [options.py](utils/options.py). 
-
-For example:
-> python main_hr.py --iid --epochs 50 --gpu 0 
-
-## Reproduce Experiments Results
+## Reproduce Run
 
 ### Figure 2
 ![alt](figs/fig2.png)
@@ -53,3 +36,34 @@ For Figure 4, directly runing the jupyter notebook file [minmax_synthetic.ipynb]
 
 
 
+## Customize Run
+
+The hyper-representation experiments are produced by:
+> python [main_hr.py](main_hr.py)
+
+The imbalanced MNIST experiments are produced by:
+> python [main_imbalance.py](main_imbalance.py)
+
+The min-max synthetic experiments are produced in the Jupyter Notebook [minmax_synthetic.ipynb](minmax_synthetic.ipynb)
+
+A simple run example is as following
+> python main_hr.py --iid --epochs 50 --gpu 0 
+
+By control the augments, there can be more configuration. In the paper, the authors mainly discuss four varients of FedNest. Here we provide the corresponding parameters to run each of them:
+
+![alt 4 main algorithms appears in the paper.](figs/fig_algo.png)
+
+- FedNest
+    > --hvp_method global --optim svrg
+- LFedNest
+    > --hvp_method seperate --optim sgd
+- FedNest<sub>SGD</sub>
+    > --hvp_method global --optim sgd
+- LFedNest<sub>SVRG</sub>
+    > --hvp_method seperate --optim svrg
+
+To control the epoch, data distribution (iid or non-iid), inner learning rate, outer learning rate, the arguments are availiable:
+> --epoch [epoch number] --iid [default is non-iid, with argument iid client data is iid] --hlr [outer learning rate] --lr [inner learning rate]
+
+
+More arguments are avaliable in [options.py](utils/options.py). 
