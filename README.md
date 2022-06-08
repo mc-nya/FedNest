@@ -1,4 +1,4 @@
-# FedNest: Federated Bilevel Optimization
+# FEDNEST: Federated Bilevel, Minimax, and Compositional Optimization
 
 ![alt ](figs/fig1.png)
 
