@@ -33,7 +33,6 @@ if __name__ == '__main__':
 
     torch.manual_seed(1)
     net_glob = build_model(args)
-    #print(net_glob.x, net_glob.y_header)
     
     # copy weights
     w_glob = net_glob.state_dict()
