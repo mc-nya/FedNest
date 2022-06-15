@@ -23,14 +23,14 @@ To reproduce the hyper-representation experiments on MNIST dataset, the [**scrip
 >python reproduce/fig2.py
 
 ### Figure 3
-![alt](figs/fig3.png)
+![alt ](figs/fig3.png)
 
 To reproduce the imbalanced learning experiments on MNIST dataset, the [**script**](reproduce/fig3.sh) provides the setup. After running this script, use following command to generate the corresponding figure.
 >python reproduce/fig3.py
 
 
 ### Figure 4
-![alt](figs/fig4.png)
+![alt ](figs/fig4.png)
 
 For Figure 4, directly runing the jupyter notebook file [minmax_synthetic.ipynb](minmax_synthetic.ipynb) will generate the result.
 
