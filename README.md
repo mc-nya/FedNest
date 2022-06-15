@@ -1,8 +1,8 @@
-# FEDNEST: Federated Bilevel, Minimax, and Compositional Optimization
+# FedNest: Federated Bilevel, Minimax, and Compositional Optimization
 
 ![alt ](figs/fig1.png)
 
-This is the implenmentation of [*FEDNEST: Federated Bilevel, Minimax, and Compositional Optimization*](https://arxiv.org/abs/2205.02215), in ICML 2022. 
+This is the implenmentation of [*FedNest: Federated Bilevel, Minimax, and Compositional Optimization*](https://arxiv.org/abs/2205.02215), in ICML 2022. 
 
 The federated code is adopted from [shaoxiongji's](https://github.com/shaoxiongji/federated-learning) implenmentation under MIT license. The bilevel implenmentation follows the algorithm of [*Optimizing Millions of Hyperparameters by Implicit Differentiation (Jonathan Lorraine, Paul Vicol, David Duvenaud)*](https://arxiv.org/abs/1911.02590). The parametric loss tuning experiments on imbalanced dataset follows the loss function design idea of [*AutoBalance: Optimized Loss Functions for
 Imbalanced Data(Mingchen Li
@@ -22,6 +22,7 @@ pytorch>=0.4
 To reproduce the hyper-representation experiments on MNIST dataset, the [**script**](reproduce/fig2.sh) provides the setup. After running this script, use following command to generate the corresponding figure.
 >python reproduce/fig2.py
 
+
 ### Figure 3
 ![alt](figs/fig3.png)
 
@@ -29,8 +30,9 @@ To reproduce the imbalanced learning experiments on MNIST dataset, the [**script
 >python reproduce/fig3.py
 
 
+
 ### Figure 4
-![alt](figs/fig4.png)
+![alt ](figs/fig4.png)
 
 For Figure 4, directly runing the jupyter notebook file [minmax_synthetic.ipynb](minmax_synthetic.ipynb) will generate the result.
 
